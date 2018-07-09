@@ -3,7 +3,7 @@
 class BlogPostsHooks {
 
 	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
-		BlogPosts::getPosts(1, 4);
+
 	}
 
 	/**
