@@ -14,34 +14,33 @@ class BlogPosts {
 
 		$curl = curl_init();
 		curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'GET' );
-		curl_setopt( $curl, CURLOPT_URL, $wgBlogPostsConfig['blogURL'] . '&' . $data );
+		curl_setopt( $curl, CURLOPT_URL, $wgBlogPostsConfig['blogURL'] . '&_embed&' . $data );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
 
 		$result = curl_exec( $curl );
-		$result = json_decode( $result );
 
-		if ( !$result ) {
+		$result = json_decode( $result, true );
+
+		if ( !$result || array_key_exists( 'code', $result ) ) {
 			return false;
 		}
 
+		return array_map( function( $post ) {
+			return [
+				'image' => $post['_embedded']['wp:featuredmedia'][0]['link'],
+				'title' => $post['title']['rendered'],
+				'content' => $post['content']['rendered'],
+			];
+		}, $result );
 	}
 
-	public static function createBlogPostsSection() {
+	public static function createBlogPostsSection( $data ) {
 		$templateParser = new TemplateParser( __DIR__ . '/templates' );
 
 		return $templateParser->processTemplate( 'blog-posts', [
 			'titleText' => wfMessage( 'blog-posts-title' ),
 			'moreText'  => wfMessage( 'blog-posts-more' ),
-			'posts'     => [
-				[
-					'title' => 'title 1',
-					'content' => 'content 1'
-				],
-				[
-					'title' => 'title 2',
-					'content' => 'content 2'
-				]
-			]
+			'posts'     => $data
 		] );
 	}
 
