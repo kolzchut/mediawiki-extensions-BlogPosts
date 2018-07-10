@@ -34,8 +34,15 @@ class BlogPosts {
 		}, $result );
 	}
 
-	public static function createBlogPostsSection( $data ) {
+	public static function createBlogPostsSection( $input, array $args, Parser $parser, PPFrame $frame ) {
+		global $wgBlogPostsConfig;
+
+		$parser->getOutput()->addModules( 'ext.BlogPosts' );
 		$templateParser = new TemplateParser( __DIR__ . '/templates' );
+
+		$initialPage = $wgBlogPostsConfig['initialPage'];
+		$postsPerPage = $wgBlogPostsConfig['postsPerPage'];
+		$data = self::getPosts( $initialPage, $postsPerPage );
 
 		return $templateParser->processTemplate( 'blog-posts', [
 			'titleText' => wfMessage( 'blog-posts-title' ),
@@ -43,6 +50,5 @@ class BlogPosts {
 			'posts'     => $data
 		] );
 	}
-
 }
 

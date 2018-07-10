@@ -27,8 +27,8 @@
 		}
 	},
 	"Hooks": {
-		"BeforePageDisplay": "BlogPostsHooks::onBeforePageDisplay",
-		"ResourceLoaderGetConfigVars": [ "BlogPostsHooks::onResourceLoaderGetConfigVars" ]
+		"ResourceLoaderGetConfigVars": [ "BlogPostsHooks::onResourceLoaderGetConfigVars" ],
+		"ParserFirstCallInit": "BlogPostsHooks::onParserFirstCallInit"
 	},
 	"MessagesDirs": {
 		"BlogPosts": [
@@ -36,9 +36,10 @@
 		]
 	},
 	"config": {
-		"blogPostsConfig": {
-			"blogURL": "https://blog.kolzchut.org.il/?rest_route=/wp/v2/posts/",
-			"postsPerPage": 4
+		"BlogPostsConfig": {
+			"blogURL": "https://interjet.co.il/camp/interjet/kolzchut/blog/wp/?rest_route=/wp/v2/posts/",
+			"postsPerPage": 4,
+			"initialPage": 1
 		}
 	},
 	"manifest_version": 1

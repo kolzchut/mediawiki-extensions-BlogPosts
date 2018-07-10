@@ -2,8 +2,8 @@
 
 class BlogPostsHooks {
 
-	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
-
+	static public function onParserFirstCallInit( Parser &$parser ) {
+		$parser->setHook( 'blogposts', 'BlogPosts::createBlogPostsSection' );
 	}
 
 	/**
