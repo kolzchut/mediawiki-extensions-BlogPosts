@@ -1,15 +1,22 @@
-<div class="blog-posts col-md-12 hidden-print noprint">
+<div id="blog-posts" class="col-md-12 hidden-print noprint">
 	<h2 class="blog-posts-title">{{ titleText }}</h2>
 
-	<div class="blog-posts">
+	<div class="blog-posts-wrap">
 		{{#posts}}
 			<div class="blog-post col-md-3">
-				<div class="blog-post-image" style="background: transparent url('{{image}}') no-repeat scroll center / cover"></div>
-				<p class="blog-post-title">{{title}}</p>
+				<p class="blog-post-image">
+					<a href="{{url}}" target="_blank" class="blog-post-image" style="background: transparent url('{{image}}') no-repeat scroll center / cover"></a>
+				</p>
+
+				<p class="blog-post-title">
+					<a href="{{url}}" target="_blank">{{title}}</a>
+				</p>
 			</div>
 		{{/posts}}
 	</div>
 
-	<a href="#" class="blog-posts-more">{{ moreText }}</a>
+	<p class="blog-posts-more-wrap">
+		<a href="#" class="blog-posts-more">{{ moreText }}</a>
+	</p>
 
 </div>

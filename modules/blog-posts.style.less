@@ -1,5 +1,85 @@
 @import 'mediawiki.mixins';
 
-.blog-post-image {
-    height: 160px;
+@blue: #355a86;
+@gray: #e3e3e3;
+@border: 1px solid @blue;
+
+#blog-posts {
+
+	margin: 30px 0 50px 0;
+
+	.blog-posts-title {
+		color: @blue;
+		border-bottom: none;
+		margin-bottom: 0;
+	}
+
+	.blog-posts-wrap {
+		display: flex;
+		justify-content: space-between;
+		padding: 17px 0;
+    	border-bottom: @border;
+    	border-top: @border;
+
+		.blog-post {
+			padding: 0;
+			width: 24%;
+			background: @gray;
+			display: flex;
+			flex-direction: column;
+
+			.blog-post-title {
+				margin: 0;
+				display: block;
+				height: 100%;
+
+				& > a {
+					width: 100%;
+					padding: 14px 8px;
+					display: block;
+					height: 100%;
+					color: @blue;
+					font-weight: 700;
+					text-decoration: none;
+				}
+			}
+
+			.blog-post-image {
+				height: 160px;
+				width: 100%;
+				margin: 0;
+
+				& > a {
+					height: 100%;
+					display: block;
+				}
+			}
+
+			@media screen and (max-width: 768px) {
+				width: 49%;
+				margin: 0 0 13px 0;
+			}
+
+			@media screen and (max-width: 576px) {
+				width: 100%;
+			}
+		}
+	}
+
+	.blog-posts-more-wrap {
+		text-align: right;
+		margin: 9px 0 0 0;
+
+		& > a {
+			color: @blue;
+			text-decoration: none !important;
+			font-weight: 800;
+			background: transparent url('../assets/images/more-arrows.png') no-repeat scroll 0 center;
+			padding: 0 30px 0 0;
+
+			&:hover {
+				color: @blue;
+			}
+		}
+	}
 }
