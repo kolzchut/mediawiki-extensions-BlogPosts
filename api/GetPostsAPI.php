@@ -11,19 +11,28 @@ class GetPostsAPI extends ApiBase {
 			'page' => [
 				ApiBase::PARAM_TYPE => 'integer',
 				ApiBase::PARAM_REQUIRED => true
-			],
-			'limit' => [
-				ApiBase::PARAM_TYPE => 'integer',
-				ApiBase::PARAM_REQUIRED => true
 			]
 		];
 	}
 
 	public function execute() {
+		global $wgBlogPostsConfig;
+
 		$queryResult = $this->getResult();
 		$params      = $this->extractRequestParams();
 
-		$output = [ 'success' => false ];
+		$postsPerPage = $wgBlogPostsConfig['postsPerPage'];
+
+		$result = BlogPosts::getPosts( $params['page'], $postsPerPage );
+
+		if ( $result ) {
+			$output = [
+				'success' => (int)true,
+				'data' => $result
+			];
+		} else {
+			$output = [ 'success' => (int)false ];
+		}
 
 		$queryResult->addValue( null, 'posts', $output );
 	}
