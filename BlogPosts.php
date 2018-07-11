@@ -29,7 +29,7 @@ class BlogPosts {
 			return [
 				'image' => $post['_embedded']['wp:featuredmedia'][0]['link'],
 				'title' => $post['title']['rendered'],
-				'content' => $post['content']['rendered'],
+				'url'   => $post['link']
 			];
 		}, $result );
 	}
