@@ -27,9 +27,9 @@ class BlogPosts {
 
 		return array_map( function( $post ) {
 			return [
-				'image' => $post['_embedded']['wp:featuredmedia'][0]['link'],
-				'title' => $post['title']['rendered'],
-				'url'   => $post['link']
+				'image' => html_entity_decode( $post['_embedded']['wp:featuredmedia'][0]['link'] ),
+				'title' => html_entity_decode( $post['title']['rendered'] ),
+				'url'   => html_entity_decode( $post['link'] )
 			];
 		}, $result );
 	}
