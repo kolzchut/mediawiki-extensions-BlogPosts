@@ -2,6 +2,13 @@
 
 class BlogPosts {
 
+	/**
+	 * Get posts from a remote WordPress API
+	 *
+	 * @param Int $page
+	 * @param Int $limit
+	 * @return array|bool
+	 */
 	public static function getPosts( Int $page, Int $limit ) {
 		global $wgBlogPostsConfig;
 
