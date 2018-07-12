@@ -3,20 +3,12 @@
 
 	<div class="blog-posts-wrap">
 		{{#posts}}
-			<div class="blog-post col-md-3">
-				<p class="blog-post-image">
-					<a href="{{url}}" target="_blank" class="blog-post-image" style="background: transparent url('{{image}}') no-repeat scroll center / cover"></a>
-				</p>
-
-				<p class="blog-post-title">
-					<a href="{{url}}" target="_blank">{{title}}</a>
-				</p>
-			</div>
+			{{>blog-post}}
 		{{/posts}}
 	</div>
 
 	<p class="blog-posts-more-wrap">
-		<a href="#" class="blog-posts-more">{{ moreText }}</a>
+		<button class="blog-posts-more">{{ moreText }}</button>
 	</p>
 
 </div>

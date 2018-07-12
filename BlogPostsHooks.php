@@ -18,7 +18,9 @@ class BlogPostsHooks {
 	 */
 	public static function onResourceLoaderGetConfigVars( &$vars ) {
 		global $wgBlogPostsConfig;
+
 		$vars['wgBlogPostsConfig'] = $wgBlogPostsConfig;
+		$vars['wgBlogPostsConfig']['template'] = file_get_contents( __DIR__ . '/templates/blog-post.mustache' );
 
 		return true;
 	}
