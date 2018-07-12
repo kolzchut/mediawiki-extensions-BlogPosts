@@ -37,7 +37,7 @@
 	},
 	"config": {
 		"BlogPostsConfig": {
-			"blogURL": "https://interjet.co.il/camp/interjet/kolzchut/blog/wp/?rest_route=/wp/v2/posts/",
+			"blogURL": "",
 			"postsPerPage": 4,
 			"initialPage": 1
 		}
