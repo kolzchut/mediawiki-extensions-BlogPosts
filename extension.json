@@ -26,7 +26,8 @@
 			"styles": "modules/blog-posts.style.less",
 			"templates": {
 				"blog-post.mustache": "templates/blog-post.mustache"
-			}
+			},
+			"dependencies": "mediawiki.api"
 		}
 	},
 	"Hooks": {

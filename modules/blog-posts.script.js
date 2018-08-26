@@ -2,19 +2,15 @@
 	'use strict';
 
 	var config = mw.config.get( 'wgBlogPostsConfig' ),
-		template = mw.template.get( 'ext.BlogPosts', 'blog-post.mustache' );
+		template = mw.template.get( 'ext.BlogPosts', 'blog-post.mustache' ),
+		api = new mw.Api();
 
 	mw.blogposts = {
 		currentPage: config.initialPage,
 		getPosts: function ( page ) {
-			return $.ajax( {
-				method: 'GET',
-				url: mw.config.get( 'wgServer' ) + mw.config.get( 'wgScriptPath' ) + '/api.php',
-				data: {
-					action: 'get-posts',
-					page: page,
-					format: 'json'
-				}
+			return api.get( {
+				action: 'get-posts',
+				page: page
 			} );
 		},
 		appendPosts: function ( posts ) {
