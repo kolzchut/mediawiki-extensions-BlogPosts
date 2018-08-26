@@ -1,8 +1,8 @@
 ( function ( mw, $ ) {
-
 	'use strict';
 
-	var config = mw.config.get('wgBlogPostsConfig');
+	var config = mw.config.get( 'wgBlogPostsConfig' ),
+		template = mw.template.get( 'ext.BlogPosts', 'blog-post.mustache' );
 
 	mw.blogposts = {
 		currentPage: config.initialPage,
@@ -22,11 +22,11 @@
 			postsWrap.empty();
 
 			$.each( posts, function ( index, post ) {
-				rendered = Mustache.render( config.template, post );
+				rendered = template.render( post );
 				postsWrap.append( rendered );
-			});
+			} );
 		}
-	}
+	};
 
 	$( document ).ready( function () {
 
@@ -47,7 +47,7 @@
 					mw.blogposts.appendPosts( response.posts.data );
 					$( this ).attr( 'disabled', false );
 				}.bind( this ) );
-		});
-	});
+		} );
+	} );
 
 }( mediaWiki, jQuery ) );

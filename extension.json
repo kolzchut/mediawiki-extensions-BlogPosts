@@ -23,7 +23,10 @@
 	"ResourceModules": {
 		"ext.BlogPosts": {
 			"scripts": "modules/blog-posts.script.js",
-			"styles": "modules/blog-posts.style.less"
+			"styles": "modules/blog-posts.style.less",
+			"templates": {
+				"blog-post.mustache": "templates/blog-post.mustache"
+			}
 		}
 	},
 	"Hooks": {
