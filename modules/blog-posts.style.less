@@ -22,8 +22,8 @@
 		flex-direction: row;
 		flex-wrap: wrap;
 		align-content: flex-start;
-    	border-bottom: @border;
-    	border-top: @border;
+		border-bottom: @border;
+		border-top: @border;
 
 		.blog-post {
 			padding: 0;
@@ -83,13 +83,59 @@
 			background: transparent url('../assets/images/more-arrows.png') no-repeat scroll 0 center;
 			padding: 0 30px 0 0;
 
+			.blogposts-loader {
+				display: none;
+			}
+
 			&:hover {
 				color: @blue;
 			}
 
 			&:disabled {
 				cursor: no-drop;
+				background: transparent;
+				padding: 0 9px 0 0;
+
+				.blogposts-loader {
+					display: inline-block;
+				}
 			}
 		}
 	}
+}
+
+.blogposts-loader {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	position: relative;
+	top: 4px;
+}
+.blogposts-loader:after {
+	content: " ";
+	display: block;
+	width: 18px;
+	height: 18px;
+	margin: 1px;
+	border-radius: 50%;
+	border: 3px solid #fff;
+	border-color: #ffffff transparent #2c5b86 #2c5b86;
+	animation: blogposts-loader 1.2s linear infinite;
+}
+@keyframes blogposts-loader {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+
+#blog-posts .blog-posts-more-wrap > button:disabled .blogposts-loader {
+	display: inline-block;
+}
+
+#blog-posts .blog-posts-more-wrap > button .blogposts-loader {
+	display: none;
 }
