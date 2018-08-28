@@ -15,7 +15,6 @@
 		},
 		appendPosts: function ( posts ) {
 			var rendered, postsWrap = $( '.blog-posts-wrap' );
-			postsWrap.empty();
 
 			$.each( posts, function ( index, post ) {
 				rendered = template.render( post );
