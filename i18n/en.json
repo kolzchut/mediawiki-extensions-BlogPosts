@@ -4,5 +4,6 @@
 		]
 	},
 	"blog-posts-title": "Recent posts from our blog",
-	"blog-posts-more": "Load more posts"
+	"blog-posts-more": "Load more posts",
+	"blog-posts-loading": "Loading..."
 }

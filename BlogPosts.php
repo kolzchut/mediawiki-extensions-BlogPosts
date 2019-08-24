@@ -51,11 +51,14 @@ class BlogPosts {
 		$postsPerPage = $wgBlogPostsConfig['postsPerPage'];
 		$data = self::getPosts( $initialPage, $postsPerPage );
 
-		return $templateParser->processTemplate( 'blog-posts', [
+		$html = $templateParser->processTemplate( 'blog-posts', [
 			'titleText' => wfMessage( 'blog-posts-title' ),
 			'moreText'  => wfMessage( 'blog-posts-more' ),
+			'loadingText' => wfMessage( 'blog-posts-loading' ),
 			'posts'     => $data
 		] );
+
+		return [ $html, 'markerType' => 'nowiki' ];
 	}
 }
 

@@ -24,24 +24,29 @@
 	};
 
 	$( document ).ready( function () {
+		var $btn = $( '.blog-posts-more-btn' ),
+			$msg = $( '.blog-posts-more-loading-text' );
 
-		$( '.blog-posts-more' ).click( function ( event ) {
+		$btn.click( function ( event ) {
 			var nextPage = mw.blogposts.currentPage + 1;
 			event.preventDefault();
-			$( this ).attr( 'disabled', true );
+			$btn.toggle();
+			$msg.toggle();
 
 			mw.blogposts.getPosts( nextPage )
 				.then( function ( response, error ) {
 					if ( !response.posts.success ) {
-						$( this ).attr( 'disabled', false );
+						$btn.toggle();
+						$msg.toggle();
 						return;
 					}
 
 					mw.blogposts.currentPage = nextPage;
 
 					mw.blogposts.appendPosts( response.posts.data );
-					$( this ).attr( 'disabled', false );
-				}.bind( this ) );
+					$btn.toggle();
+					$msg.toggle();
+				} );
 		} );
 	} );
 
