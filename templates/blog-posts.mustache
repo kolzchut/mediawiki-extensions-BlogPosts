@@ -1,12 +1,12 @@
-<div id="blog-posts" class="col-md-12 hidden-print noprint">
-	<h2 class="blog-posts-title">{{ titleText }}</h2>
-	<div class="blog-posts-wrap">
+<div id="blog-posts" class="hidden-print noprint">
+	<header class="blog-posts-header">
+		{{#morePostsUrl}}<a class="blog-posts-more-link" href="{{morePostsUrl}}">{{ moreText }}</a>{{/morePostsUrl}}
+		<h2 >{{ titleText }}</h2>
+	</header>
+	<div class="blog-posts-body">
 		{{#posts}}
 			{{>blog-post}}
 		{{/posts}}
 	</div>
-	<div class="blog-posts-more-wrap">
-		<button class="blog-posts-more-btn">{{ moreText }} <span class="fa fa-angle-double-left blog-posts-more-icon" aria-hidden="true"></span></button>
-		<div class="blog-posts-more-loading-text">{{ loadingText }} <span class="fa fa-spin fa-circle-o-notch" aria-hidden="true"></span></div>
-	</div>
+
 </div>

@@ -5,11 +5,11 @@ class BlogPosts {
 	/**
 	 * Get posts from a remote WordPress API
 	 *
-	 * @param Int $page
-	 * @param Int $limit
+	 * @param int $page
+	 * @param int $limit
 	 * @return array|bool
 	 */
-	public static function getPosts( Int $page, Int $limit ) {
+	public static function getPosts( int $page, int $limit ) {
 		global $wgBlogPostsConfig;
 
 		$data = [
@@ -32,9 +32,9 @@ class BlogPosts {
 			return false;
 		}
 
-		return array_map( function( $post ) {
+		return array_map( static function ( $post ) {
 			return [
-				'image' => html_entity_decode( $post['_embedded']['wp:featuredmedia'][0]['link'] ),
+				'image' => html_entity_decode( $post['_embedded']['wp:featuredmedia'][0]['media_details']['sizes']['large']['source_url'] ),
 				'title' => html_entity_decode( $post['title']['rendered'] ),
 				'url'   => html_entity_decode( $post['link'] )
 			];
@@ -44,7 +44,7 @@ class BlogPosts {
 	public static function createBlogPostsSection( $input, array $args, Parser $parser, PPFrame $frame ) {
 		global $wgBlogPostsConfig;
 
-		$parser->getOutput()->addModules( 'ext.BlogPosts' );
+		$parser->getOutput()->addModuleStyles( 'ext.BlogPosts.styles' );
 		$templateParser = new TemplateParser( __DIR__ . '/templates' );
 
 		$initialPage = $wgBlogPostsConfig['initialPage'];
@@ -54,11 +54,10 @@ class BlogPosts {
 		$html = $templateParser->processTemplate( 'blog-posts', [
 			'titleText' => wfMessage( 'blog-posts-title' ),
 			'moreText'  => wfMessage( 'blog-posts-more' ),
-			'loadingText' => wfMessage( 'blog-posts-loading' ),
+			'morePostsUrl' => $wgBlogPostsConfig['morePostsUrl'],
 			'posts'     => $data
 		] );
 
 		return [ $html, 'markerType' => 'nowiki' ];
 	}
 }
-
