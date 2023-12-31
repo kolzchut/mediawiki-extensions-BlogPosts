@@ -38,7 +38,7 @@
 		"BlogPostsConfig": {
 			"blogURL": null,
 			"morePostsUrl": null,
-			"postsPerPage": 3,
+			"postsPerPage": 4,
 			"initialPage": 1
 		}
 	},
