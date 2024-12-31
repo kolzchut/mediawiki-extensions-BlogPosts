@@ -21,7 +21,7 @@ class BlogPosts {
 
 		$curl = curl_init();
 		curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'GET' );
-		curl_setopt( $curl, CURLOPT_URL, $wgBlogPostsConfig['blogURL'] . '&_embed&' . $data );
+		curl_setopt( $curl, CURLOPT_URL, $wgBlogPostsConfig['blogURL'] . '&_embed=wp:featuredmedia&' . $data );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
 
 		$result = curl_exec( $curl );
@@ -33,8 +33,9 @@ class BlogPosts {
 		}
 
 		return array_map( static function ( $post ) {
+			$img = $post['_embedded']['wp:featuredmedia'][0]['media_details']['sizes']['large']['source_url'] ?? null;
 			return [
-				'image' => html_entity_decode( $post['_embedded']['wp:featuredmedia'][0]['media_details']['sizes']['large']['source_url'] ),
+				'image' => $img ? html_entity_decode( $img ) : '',
 				'title' => html_entity_decode( $post['title']['rendered'] ),
 				'url'   => html_entity_decode( $post['link'] )
 			];
