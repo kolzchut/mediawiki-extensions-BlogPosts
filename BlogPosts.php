@@ -110,7 +110,7 @@ class BlogPosts {
 	public static function createBlogPostsSection( $input, array $args, Parser $parser, PPFrame $frame ) {
 		global $wgBlogPostsConfig;
 
-		$parser->getOutput()->addModuleStyles( 'ext.BlogPosts.styles' );
+		$parser->getOutput()->addModuleStyles( [ 'ext.BlogPosts.styles' ] );
 		$templateParser = new TemplateParser( __DIR__ . '/templates' );
 
 		$initialPage = $wgBlogPostsConfig['initialPage'];
