@@ -1,6 +1,6 @@
 {
 	"name": "Blog Posts",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"author": [
 		"Tal Koren (Interjet, Kol Zchut)"
 	],
@@ -8,13 +8,36 @@
 	"url": "https://github.com/kolzchut/mediawiki-extensions-BlogPosts",
 	"license-name": "MIT",
 	"type": "other",
-	"AutoloadClasses": {
-		"BlogPosts": "BlogPosts.php",
-		"GetPostsAPI": "api/GetPostsAPI.php",
-		"BlogPostsHooks": "BlogPostsHooks.php"
+	"requires": {
+		"MediaWiki": ">= 1.39.0",
+		"platform": {
+			"php": ">= 8.1"
+		}
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\BlogPosts\\": "includes/"
 	},
 	"APIModules": {
-		"get-posts": "GetPostsAPI"
+		"get-posts": {
+			"class": "MediaWiki\\Extension\\BlogPosts\\GetPostsAPI",
+			"services": [
+				"MainConfig",
+				"HttpRequestFactory"
+			]
+		}
+	},
+	"HookHandlers": {
+		"main": {
+			"class": "MediaWiki\\Extension\\BlogPosts\\Hooks",
+			"services": [
+				"MainConfig",
+				"HttpRequestFactory"
+			]
+		}
+	},
+	"Hooks": {
+		"ResourceLoaderGetConfigVars": "main",
+		"ParserFirstCallInit": "main"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",
@@ -22,12 +45,8 @@
 	},
 	"ResourceModules": {
 		"ext.BlogPosts.styles": {
-			"styles": "modules/blog-posts.style.less"
+			"styles": "resources/blog-posts.style.less"
 		}
-	},
-	"Hooks": {
-		"ResourceLoaderGetConfigVars": [ "BlogPostsHooks::onResourceLoaderGetConfigVars" ],
-		"ParserFirstCallInit": "BlogPostsHooks::onParserFirstCallInit"
 	},
 	"MessagesDirs": {
 		"BlogPosts": [
@@ -36,11 +55,13 @@
 	},
 	"config": {
 		"BlogPostsConfig": {
-			"blogURL": null,
-			"morePostsUrl": null,
-			"postsPerPage": 4,
-			"initialPage": 1
+			"value": {
+				"blogURL": null,
+				"morePostsUrl": null,
+				"postsPerPage": 4,
+				"initialPage": 1
+			}
 		}
 	},
-	"manifest_version": 1
+	"manifest_version": 2
 }

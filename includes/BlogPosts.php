@@ -1,34 +1,67 @@
 <?php
 
+namespace MediaWiki\Extension\BlogPosts;
+
+use MediaWiki\Config\Config;
+use MediaWiki\Http\HttpRequestFactory;
+use MediaWiki\Logger\LoggerFactory;
+use Psr\Log\LoggerInterface;
+
 class BlogPosts {
+
+	private LoggerInterface $logger;
+
+	public function __construct(
+		private readonly Config $config,
+		private readonly HttpRequestFactory $httpRequestFactory,
+	) {
+		$this->logger = LoggerFactory::getInstance( 'BlogPosts' );
+	}
 
 	/**
 	 * Get posts from a remote WordPress API
 	 *
 	 * @param int $page
 	 * @param int $limit
-	 * @return array|bool
+	 * @return array|false
 	 */
-	public static function getPosts( int $page, int $limit ) {
-		global $wgBlogPostsConfig;
+	public function getPosts( int $page, int $limit ): array|false {
+		$blogPostsConfig = $this->config->get( 'BlogPostsConfig' );
+
+		if ( !$blogPostsConfig['blogURL'] ) {
+			$this->logger->error( 'BlogPosts: blogURL is not configured' );
+			return false;
+		}
 
 		$data = [
-			'page'   => $page ? $page : 1,
-			'per_page' => $limit ? $limit : $wgBlogPostsConfig['postsPerPage']
+			'page' => $page ?: 1,
+			'per_page' => $limit ?: $blogPostsConfig['postsPerPage']
 		];
 
-		$data = http_build_query( $data );
+		$url = $blogPostsConfig['blogURL'] . '&_embed=wp:featuredmedia&' . http_build_query( $data );
 
-		$curl = curl_init();
-		curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'GET' );
-		curl_setopt( $curl, CURLOPT_URL, $wgBlogPostsConfig['blogURL'] . '&_embed=wp:featuredmedia&' . $data );
-		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
+		$response = $this->httpRequestFactory->get( $url, [], __METHOD__ );
 
-		$result = curl_exec( $curl );
+		if ( $response === null ) {
+			$this->logger->error( 'BlogPosts: HTTP request failed for URL {url}', [ 'url' => $url ] );
+			return false;
+		}
 
-		$result = json_decode( $result, true );
+		$result = json_decode( $response, true );
+
+		if ( $result === null ) {
+			$this->logger->error( 'BlogPosts: Failed to decode JSON response from {url}', [ 'url' => $url ] );
+			return false;
+		}
 
 		if ( !$result || array_key_exists( 'code', $result ) ) {
+			$this->logger->warning(
+				'BlogPosts: API returned error from {url}: {code}',
+				[
+					'url' => $url,
+					'code' => $result['code'] ?? 'empty response',
+				]
+			);
 			return false;
 		}
 
@@ -39,7 +72,7 @@ class BlogPosts {
 			return [
 				'image' => $img ? html_entity_decode( $img ) : '',
 				'title' => html_entity_decode( $post['title']['rendered'] ),
-				'url'   => html_entity_decode( $post['link'] )
+				'url' => html_entity_decode( $post['link'] )
 			];
 		}, $result );
 	}
@@ -51,7 +84,7 @@ class BlogPosts {
 	 * @param int $minHeight Minimum height requirement (default 200px)
 	 * @return string|null Image URL or null if no suitable image found
 	 */
-	private static function getBestImageSize( array $post, int $minHeight = 200 ) {
+	private static function getBestImageSize( array $post, int $minHeight = 200 ): ?string {
 		$featuredMedia = self::arrayGet( $post, '_embedded.wp:featuredmedia.0' );
 		if ( !$featuredMedia ) {
 			return null;
@@ -107,28 +140,8 @@ class BlogPosts {
 		return $largestSize ?: $sourceUrl;
 	}
 
-	public static function createBlogPostsSection( $input, array $args, Parser $parser, PPFrame $frame ) {
-		global $wgBlogPostsConfig;
-
-		$parser->getOutput()->addModuleStyles( [ 'ext.BlogPosts.styles' ] );
-		$templateParser = new TemplateParser( __DIR__ . '/templates' );
-
-		$initialPage = $wgBlogPostsConfig['initialPage'];
-		$postsPerPage = $wgBlogPostsConfig['postsPerPage'];
-		$data = self::getPosts( $initialPage, $postsPerPage );
-
-		$html = $templateParser->processTemplate( 'blog-posts', [
-			'titleText' => wfMessage( 'blog-posts-title' ),
-			'moreText'  => wfMessage( 'blog-posts-more' ),
-			'morePostsUrl' => $wgBlogPostsConfig['morePostsUrl'],
-			'posts'     => $data
-		] );
-
-		return [ $html, 'markerType' => 'nowiki' ];
-	}
-
 	/**
-	 * @param ArrayAccess|array $array
+	 * @param array $array
 	 * @param string|int|null $key
 	 * @param mixed $default Default value to return if path not found
 	 * @return mixed
@@ -149,4 +162,5 @@ class BlogPosts {
 
 		return $current;
 	}
+
 }

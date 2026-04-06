@@ -1,26 +1,14 @@
 <?php
 
-namespace Tests\Unit;
+namespace MediaWiki\Extension\BlogPosts\Tests\Unit;
 
+use MediaWiki\Extension\BlogPosts\BlogPosts;
 use MediaWikiUnitTestCase;
 
 /**
- * @coversDefaultClass \BlogPosts
+ * @coversDefaultClass \MediaWiki\Extension\BlogPosts\BlogPosts
  */
 class BlogPostsTest extends MediaWikiUnitTestCase {
-	/**
-	 * @covers ::GetPosts
-	 * @return void
-	 */
-	public function testGetPosts() {
-	}
-
-	/**
-	 * @covers ::CreateBlogPostsSection
-	 * @return void
-	 */
-	public function testCreateBlogPostsSection() {
-	}
 
 	/**
 	 * @covers ::getBestImageSize
@@ -412,8 +400,7 @@ class BlogPostsTest extends MediaWikiUnitTestCase {
 	 * @throws \ReflectionException
 	 */
 	private function invokeArrayGet( array $array, string $path, $default = null ) {
-		// Using reflection to access private static method
-		$reflection = new \ReflectionClass( '\BlogPosts' );
+		$reflection = new \ReflectionClass( BlogPosts::class );
 		$method = $reflection->getMethod( 'arrayGet' );
 		$method->setAccessible( true );
 
@@ -429,8 +416,7 @@ class BlogPostsTest extends MediaWikiUnitTestCase {
 	 * @throws \ReflectionException
 	 */
 	private function invokeGetBestImageSize( array $post, int $minHeight ) {
-		// Using reflection to access private static method
-		$reflection = new \ReflectionClass( '\BlogPosts' );
+		$reflection = new \ReflectionClass( BlogPosts::class );
 		$method = $reflection->getMethod( 'getBestImageSize' );
 		$method->setAccessible( true );
 
