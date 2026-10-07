@@ -21,6 +21,11 @@ class BlogPosts {
 	/**
 	 * Get posts from a remote WordPress API
 	 *
+	 * Returns an array (possibly empty, when the blog genuinely has no posts)
+	 * on success, and false when the posts could not be fetched or understood.
+	 * Callers must keep the two apart: an empty widget caused by a failed fetch
+	 * must not look like a blog with nothing in it.
+	 *
 	 * @param int $page
 	 * @param int $limit
 	 * @return array|false
@@ -40,26 +45,47 @@ class BlogPosts {
 
 		$url = $blogPostsConfig['blogURL'] . '&_embed=wp:featuredmedia&' . http_build_query( $data );
 
-		$response = $this->httpRequestFactory->get( $url, [], __METHOD__ );
+		$request = $this->httpRequestFactory->create( $url, [], __METHOD__ );
+		// Extra headers for the fetch, e.g. a Host / X-Forwarded-Proto pair
+		// when blogURL addresses the blog's web server directly rather than
+		// through its public hostname. See README.md.
+		foreach ( self::getRequestHeaders( $blogPostsConfig ) as $name => $value ) {
+			$request->setHeader( $name, $value );
+		}
+		$status = $request->execute();
+		$httpStatus = $request->getStatus();
 
-		if ( $response === null ) {
-			$this->logger->error( 'BlogPosts: HTTP request failed for URL {url}', [ 'url' => $url ] );
+		if ( !$status->isOK() ) {
+			$this->logger->error(
+				'BlogPosts: HTTP request failed for URL {url} (HTTP status {status})',
+				[ 'url' => $url, 'status' => $httpStatus ]
+			);
 			return false;
 		}
 
-		$result = json_decode( $response, true );
+		$result = json_decode( (string)$request->getContent(), true );
 
-		if ( $result === null ) {
-			$this->logger->error( 'BlogPosts: Failed to decode JSON response from {url}', [ 'url' => $url ] );
+		if ( !is_array( $result ) ) {
+			// Typically an HTML page served with a 2xx/3xx status: an edge
+			// challenge, a login wall, or a redirect that was not followed.
+			$this->logger->error(
+				'BlogPosts: Failed to decode JSON response from {url} (HTTP status {status}, ' .
+					'content type {contentType})',
+				[
+					'url' => $url,
+					'status' => $httpStatus,
+					'contentType' => $request->getResponseHeader( 'content-type' ) ?? 'none',
+				]
+			);
 			return false;
 		}
 
-		if ( !$result || array_key_exists( 'code', $result ) ) {
-			$this->logger->warning(
+		if ( array_key_exists( 'code', $result ) ) {
+			$this->logger->error(
 				'BlogPosts: API returned error from {url}: {code}',
 				[
 					'url' => $url,
-					'code' => $result['code'] ?? 'empty response',
+					'code' => $result['code'],
 				]
 			);
 			return false;
@@ -75,6 +101,27 @@ class BlogPosts {
 				'url' => html_entity_decode( $post['link'] )
 			];
 		}, $result );
+	}
+
+	/**
+	 * The extra request headers configured for the fetch, as name => value.
+	 * Anything that is not a string-keyed scalar is ignored rather than sent.
+	 *
+	 * @param array $blogPostsConfig
+	 * @return array<string,string>
+	 */
+	public static function getRequestHeaders( array $blogPostsConfig ): array {
+		$headers = [];
+		$configured = $blogPostsConfig['requestHeaders'] ?? [];
+		if ( !is_array( $configured ) ) {
+			return $headers;
+		}
+		foreach ( $configured as $name => $value ) {
+			if ( is_string( $name ) && $name !== '' && is_scalar( $value ) && (string)$value !== '' ) {
+				$headers[$name] = (string)$value;
+			}
+		}
+		return $headers;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 {
 	"name": "Blog Posts",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"author": [
 		"Tal Koren (Interjet, Kol Zchut)"
 	],
@@ -57,6 +57,7 @@
 		"BlogPostsConfig": {
 			"value": {
 				"blogURL": null,
+				"requestHeaders": [],
 				"morePostsUrl": null,
 				"postsPerPage": 4,
 				"initialPage": 1
