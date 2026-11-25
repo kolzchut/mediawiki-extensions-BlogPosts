@@ -81,10 +81,32 @@ class Hooks implements ParserFirstCallInitHook, ResourceLoaderGetConfigVarsHook 
 			'moreText' => wfMessage( 'blog-posts-more' ),
 			'morePostsUrl' => $blogPostsConfig['morePostsUrl'],
 			'state' => self::getWidgetState( $data ),
-			'posts' => $data
+			'posts' => self::getTemplatePosts( $data )
 		] );
 
 		return [ $html, 'markerType' => 'nowiki' ];
+	}
+
+	/**
+	 * The posts as blog-post.mustache takes them. A missing link or image is
+	 * passed as false, not '': the template's sections render for any string,
+	 * the empty one included.
+	 *
+	 * @param array|false $data As BlogPosts::getPosts() returns it
+	 * @return array[]
+	 */
+	public static function getTemplatePosts( $data ): array {
+		if ( !is_array( $data ) ) {
+			return [];
+		}
+		return array_map( static function ( array $post ): array {
+			foreach ( [ 'url', 'image' ] as $key ) {
+				if ( ( $post[$key] ?? '' ) === '' ) {
+					$post[$key] = false;
+				}
+			}
+			return $post;
+		}, $data );
 	}
 
 	/**

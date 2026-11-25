@@ -91,16 +91,63 @@ class BlogPosts {
 			return false;
 		}
 
-		return array_map( static function ( $post ) {
-			// Get the featured image with progressive fallback to larger sizes
-			$img = self::getBestImageSize( $post, 200 );
+		return array_values( array_map(
+			[ self::class, 'formatPost' ],
+			array_filter( $result, 'is_array' )
+		) );
+	}
 
-			return [
-				'image' => $img ? html_entity_decode( $img ) : '',
-				'title' => html_entity_decode( $post['title']['rendered'] ),
-				'url' => html_entity_decode( $post['link'] )
-			];
-		}, $result );
+	/**
+	 * One post from the WordPress REST response, as the template's plain-text
+	 * fields: the title as text, and the link and image as http(s) URLs or ''.
+	 *
+	 * The values are not HTML. WordPress sends the title as HTML (entities
+	 * such as &#8211; included), so any tags are dropped and the entities
+	 * decoded here, and the template escapes every value on output.
+	 *
+	 * @param array $post
+	 * @return array{image:string,title:string,url:string}
+	 */
+	public static function formatPost( array $post ): array {
+		// Get the featured image with progressive fallback to larger sizes
+		$img = self::getBestImageSize( $post, 200 );
+		$title = self::arrayGet( $post, 'title.rendered', '' );
+
+		return [
+			'image' => self::sanitizeUrl( $img ),
+			'title' => is_string( $title ) ? self::htmlToText( $title ) : '',
+			'url' => self::sanitizeUrl( $post['link'] ?? null ),
+		];
+	}
+
+	/**
+	 * Plain text of an HTML fragment: tags dropped, then entities decoded.
+	 *
+	 * @param string $html
+	 * @return string
+	 */
+	private static function htmlToText( string $html ): string {
+		return trim( html_entity_decode( strip_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+	}
+
+	/**
+	 * The URL with its entities decoded when it is an absolute http:// or
+	 * https:// URL with a host, and '' for anything else, so that no other
+	 * scheme reaches an href or src attribute.
+	 *
+	 * @param mixed $url
+	 * @return string
+	 */
+	public static function sanitizeUrl( $url ): string {
+		if ( !is_string( $url ) ) {
+			return '';
+		}
+		$url = trim( html_entity_decode( $url, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+		if ( !preg_match( '#^https?://[^/?\#\s]#i', $url ) || preg_match( '/[\x00-\x1f\x7f]/', $url ) ) {
+			return '';
+		}
+		$host = parse_url( $url, PHP_URL_HOST );
+		return is_string( $host ) && $host !== '' ? $url : '';
 	}
 
 	/**

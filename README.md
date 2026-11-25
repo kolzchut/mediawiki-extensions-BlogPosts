@@ -51,6 +51,12 @@ This extension depends on the existence of FontAwesome for its icons.
 
 ## Changelog
 
+### 0.1.1
+- Print each post's title, link and image URL as escaped text. The title's
+  HTML entities are still decoded first, so `&#8211;` shows as a dash
+- Leave out a post's link or image when its URL is not an `http://` or
+  `https://` URL
+
 ### 0.1.0
 - Add `requestHeaders`, so `blogURL` can address the blog's web server directly
 - A failed fetch is told apart from an empty blog (`data-blogposts-state`),
