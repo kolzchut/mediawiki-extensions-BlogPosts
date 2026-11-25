@@ -88,9 +88,10 @@ class Hooks implements ParserFirstCallInitHook, ResourceLoaderGetConfigVarsHook 
 	}
 
 	/**
-	 * The posts as blog-post.mustache takes them. A missing link or image is
-	 * passed as false, not '': the template's sections render for any string,
-	 * the empty one included.
+	 * The posts as blog-post.mustache takes them, with a hasUrl and a hasImage
+	 * flag for the template's sections. The sections test these booleans, not
+	 * the URLs themselves: a string section renders even when the string is
+	 * empty, and inside the blog-post partial it hides the post's own fields.
 	 *
 	 * @param array|false $data As BlogPosts::getPosts() returns it
 	 * @return array[]
@@ -100,11 +101,8 @@ class Hooks implements ParserFirstCallInitHook, ResourceLoaderGetConfigVarsHook 
 			return [];
 		}
 		return array_map( static function ( array $post ): array {
-			foreach ( [ 'url', 'image' ] as $key ) {
-				if ( ( $post[$key] ?? '' ) === '' ) {
-					$post[$key] = false;
-				}
-			}
+			$post['hasUrl'] = ( $post['url'] ?? '' ) !== '';
+			$post['hasImage'] = ( $post['image'] ?? '' ) !== '';
 			return $post;
 		}, $data );
 	}

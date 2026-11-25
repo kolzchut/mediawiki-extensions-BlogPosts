@@ -15,6 +15,9 @@ use StatusValue;
  * The <blogposts> tag end to end through the parser, with the blog's REST
  * response served from a fixture: what reaches the page is escaped text.
  *
+ * The parse reaches the database (the page's language), hence the group.
+ *
+ * @group Database
  * @covers \MediaWiki\Extension\BlogPosts\Hooks
  * @covers \MediaWiki\Extension\BlogPosts\BlogPosts
  */

@@ -44,10 +44,23 @@ class BlogPostRenderTest extends MediaWikiUnitTestCase {
 		return $post;
 	}
 
-	private function render( array $wpPost ): string {
+	/**
+	 * The whole widget, as the tag hook renders it: blog-posts.mustache, which
+	 * pulls each post in through the blog-post partial. Rendering the partial
+	 * on its own hides context-lookup differences inside it.
+	 *
+	 * @param array ...$wpPosts
+	 * @return string
+	 */
+	private function render( array ...$wpPosts ): string {
 		$templateParser = new TemplateParser( __DIR__ . '/../../../templates', new HashBagOStuff() );
-		[ $post ] = Hooks::getTemplatePosts( [ BlogPosts::formatPost( $wpPost ) ] );
-		return $templateParser->processTemplate( 'blog-post', $post );
+		return $templateParser->processTemplate( 'blog-posts', [
+			'titleText' => 'Blog',
+			'moreText' => 'More',
+			'morePostsUrl' => 'https://blog.example.org',
+			'state' => 'ok',
+			'posts' => Hooks::getTemplatePosts( array_map( [ BlogPosts::class, 'formatPost' ], $wpPosts ) ),
+		] );
 	}
 
 	private function parse( string $html ): DOMXPath {
@@ -80,7 +93,7 @@ class BlogPostRenderTest extends MediaWikiUnitTestCase {
 		$this->assertSame( 0, $xpath->query( '//i' )->length, $html );
 		$this->assertSame( 0, $xpath->query( '//*[@data-x]' )->length, $html );
 
-		$anchors = $xpath->query( '//a' );
+		$anchors = $xpath->query( '//a[@class="blog-post"]' );
 		$this->assertSame( 1, $anchors->length );
 		$anchor = $anchors->item( 0 );
 		// The quote in the link stays inside href: no attribute is added.
@@ -129,7 +142,7 @@ class BlogPostRenderTest extends MediaWikiUnitTestCase {
 		$this->assertSame( $expectedText, $title->textContent );
 		$this->assertSame( 0, $xpath->query( '//div[@class="blog-post-title"]/*' )->length );
 
-		$anchor = $xpath->query( '//a' )->item( 0 );
+		$anchor = $xpath->query( '//a[@class="blog-post"]' )->item( 0 );
 		$this->assertSame( 'https://blog.example.org/%d7%96/', $anchor->getAttribute( 'href' ) );
 		$this->assertSame( '_blank', $anchor->getAttribute( 'target' ) );
 		$this->assertSame( self::IMAGE, $xpath->query( '//img' )->item( 0 )->getAttribute( 'src' ) );
@@ -140,7 +153,7 @@ class BlogPostRenderTest extends MediaWikiUnitTestCase {
 			self::wpPost( 'T', 'javascript:alert(1)', 'data:image/svg+xml,<svg onload=alert(1)>' )
 		) );
 
-		$this->assertSame( 0, $xpath->query( '//*[@href]' )->length );
+		$this->assertSame( 0, $xpath->query( '//a[@class="blog-post"][@href]' )->length );
 		$this->assertSame( 0, $xpath->query( '//img' )->length );
 		$this->assertSame( 0, $xpath->query( '//svg' )->length );
 		// The card itself is still there, with its title.
@@ -155,17 +168,11 @@ class BlogPostRenderTest extends MediaWikiUnitTestCase {
 	}
 
 	public function testWidgetEscapesEveryPost() {
-		$templateParser = new TemplateParser( __DIR__ . '/../../../templates', new HashBagOStuff() );
-		$html = $templateParser->processTemplate( 'blog-posts', [
-			'titleText' => 'Blog',
-			'moreText' => 'More',
-			'morePostsUrl' => 'https://blog.example.org',
-			'state' => 'ok',
-			'posts' => Hooks::getTemplatePosts( [
-				BlogPosts::formatPost( self::wpPost( '&lt;b&gt;one&lt;/b&gt;', 'https://blog.example.org/1/' ) ),
-				BlogPosts::formatPost( self::wpPost( 'two &#8211; 2', 'javascript:alert(1)', null ) ),
-			] ),
-		] );
+		$html = $this->render(
+			self::wpPost( '&lt;b&gt;one&lt;/b&gt;', 'https://blog.example.org/1/' ),
+			self::wpPost( 'two &#8211; 2', 'javascript:alert(1)', null ),
+			self::wpPost( 'three', 'https://blog.example.org/3/', 'https://blog.example.org/3.jpg' )
+		);
 		$xpath = $this->parse( $html );
 
 		$this->assertSame( 0, $xpath->query( '//b' )->length, $html );
@@ -173,15 +180,31 @@ class BlogPostRenderTest extends MediaWikiUnitTestCase {
 		foreach ( $xpath->query( '//div[@class="blog-post-title"]' ) as $node ) {
 			$titles[] = $node->textContent;
 		}
-		$this->assertSame( [ '<b>one</b>', 'two – 2' ], $titles );
-		$this->assertSame( 1, $xpath->query( '//a[@class="blog-post"][@href]' )->length );
-		$this->assertSame( 1, $xpath->query( '//img' )->length );
+		$this->assertSame( [ '<b>one</b>', 'two – 2', 'three' ], $titles );
+
+		// Each card carries its own post's link and image, and only those.
+		$hrefs = [];
+		foreach ( $xpath->query( '//a[@class="blog-post"]' ) as $node ) {
+			$hrefs[] = $node->hasAttribute( 'href' ) ? $node->getAttribute( 'href' ) : null;
+		}
+		$this->assertSame( [ 'https://blog.example.org/1/', null, 'https://blog.example.org/3/' ], $hrefs );
+		$srcs = [];
+		foreach ( $xpath->query( '//div[@class="blog-post-image"]' ) as $node ) {
+			$img = $xpath->query( 'img', $node )->item( 0 );
+			$srcs[] = $img ? $img->getAttribute( 'src' ) : null;
+		}
+		$this->assertSame( [ self::IMAGE, null, 'https://blog.example.org/3.jpg' ], $srcs );
+		$this->assertSame( 'https://blog.example.org', $xpath->query( '//a[@class="blog-posts-more-link"]' )
+			->item( 0 )->getAttribute( 'href' ) );
 	}
 
 	public function testTemplatePostsMarkMissingLinkAndImage() {
 		$this->assertSame( [], Hooks::getTemplatePosts( false ) );
 		$this->assertSame(
-			[ [ 'image' => false, 'title' => 'T', 'url' => 'https://blog.example.org/' ] ],
+			[ [
+				'image' => '', 'title' => 'T', 'url' => 'https://blog.example.org/',
+				'hasUrl' => true, 'hasImage' => false,
+			] ],
 			Hooks::getTemplatePosts( [ [ 'image' => '', 'title' => 'T', 'url' => 'https://blog.example.org/' ] ] )
 		);
 	}
