@@ -81,10 +81,30 @@ class Hooks implements ParserFirstCallInitHook, ResourceLoaderGetConfigVarsHook 
 			'moreText' => wfMessage( 'blog-posts-more' ),
 			'morePostsUrl' => $blogPostsConfig['morePostsUrl'],
 			'state' => self::getWidgetState( $data ),
-			'posts' => $data
+			'posts' => self::getTemplatePosts( $data )
 		] );
 
 		return [ $html, 'markerType' => 'nowiki' ];
+	}
+
+	/**
+	 * The posts as blog-post.mustache takes them, with a hasUrl and a hasImage
+	 * flag for the template's sections. The sections test these booleans, not
+	 * the URLs themselves: a string section renders even when the string is
+	 * empty, and inside the blog-post partial it hides the post's own fields.
+	 *
+	 * @param array|false $data As BlogPosts::getPosts() returns it
+	 * @return array[]
+	 */
+	public static function getTemplatePosts( $data ): array {
+		if ( !is_array( $data ) ) {
+			return [];
+		}
+		return array_map( static function ( array $post ): array {
+			$post['hasUrl'] = ( $post['url'] ?? '' ) !== '';
+			$post['hasImage'] = ( $post['image'] ?? '' ) !== '';
+			return $post;
+		}, $data );
 	}
 
 	/**
